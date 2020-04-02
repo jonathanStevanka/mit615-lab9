@@ -14,8 +14,19 @@
 #
 
 class Comment < ApplicationRecord
+  extend FriendlyId
+  friendly_id :uuid, use: [:slugged,:finders]
   belongs_to :article
   belongs_to :user
-
+  before_create :generate_uuid
+  after_create :manually_update_slug
   validates :message, presence: true
+
+  def generate_uuid
+    self.uuid = "#{self.model_name.name}-" + SecureRandom.uuid
+  end
+
+  def manually_update_slug
+    self.update_column(:slug,self.uuid)
+  end
 end
